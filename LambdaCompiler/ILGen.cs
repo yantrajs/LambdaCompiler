@@ -969,7 +969,7 @@ namespace YantraJS.LambdaCompiler
             Debug.Assert(arrayType != null);
             Debug.Assert(arrayType.IsArray);
 
-            if (arrayType.IsSZArray)
+            if (arrayType.IsSZArray())
             {
                 il.Emit(OpCodes.Newarr, arrayType.GetElementType()!);
             }

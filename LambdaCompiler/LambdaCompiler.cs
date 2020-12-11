@@ -7,7 +7,14 @@ using System.Text;
 
 namespace YantraJS.LambdaCompiler
 {
-    public partial class LambdaCompiler
+    internal interface ILocalCache
+    {
+        LocalBuilder GetLocal(Type type);
+
+        void FreeLocal(LocalBuilder local);
+    }
+
+    public partial class LambdaCompiler: ILocalCache
     {
 
         [Flags]
@@ -31,6 +38,7 @@ namespace YantraJS.LambdaCompiler
         private readonly Dictionary<ParameterExpression, int> arguments;
 
         private readonly List<LocalBuilder> tempVariables = new List<LocalBuilder>();
+        private readonly List<LocalBuilder> freeVariables = new List<LocalBuilder>();
         private readonly ILGenerator il;
         private readonly ILGenerator _ilg;
         private readonly LambdaGenerator generator;
@@ -95,9 +103,9 @@ namespace YantraJS.LambdaCompiler
         //}
 
 
-        private LocalBuilder GetTempVariable(Type type)
+        public LocalBuilder GetLocal(Type type)
         {
-            var v = tempVariables.FirstOrDefault(x => x.LocalType == type);
+            var v = freeVariables.FirstOrDefault(x => x.LocalType == type);
             if (v == null)
             {
                 v = il.DeclareLocal(type);
@@ -106,5 +114,9 @@ namespace YantraJS.LambdaCompiler
             return v;
         }
 
+        public void FreeLocal(LocalBuilder local)
+        {
+            freeVariables.Add(local);
+        }
     }
 }

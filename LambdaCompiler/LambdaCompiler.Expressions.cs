@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace YantraJS.LambdaCompiler
@@ -66,7 +69,7 @@ namespace YantraJS.LambdaCompiler
             switch (node.NodeType)
             {
                 case ExpressionType.Assign:
-                    EmitAssign((AssignBinaryExpression)node, CompilationFlags.EmitAsVoidType);
+                    EmitAssign((BinaryExpression)node, CompilationFlags.EmitAsVoidType);
                     break;
                 case ExpressionType.Block:
                     Emit((BlockExpression)node, UpdateEmitAsTypeFlag(flags, CompilationFlags.EmitAsVoidType));
@@ -214,16 +217,16 @@ namespace YantraJS.LambdaCompiler
 
             // Emit indexes. We don't allow byref args, so no need to worry
             // about write-backs or EmitAddress
-            for (int i = 0, n = node.ArgumentCount; i < n; i++)
+            foreach (var arg in node.Arguments)
             {
-                Expression arg = node.GetArgument(i);
+                // Expression arg = node.GetArgument(i);
                 EmitExpression(arg);
             }
 
             EmitGetIndexCall(node, objectType);
         }
 
-        private void EmitIndexAssignment(AssignBinaryExpression node, CompilationFlags flags)
+        private void EmitIndexAssignment(BinaryExpression node, CompilationFlags flags)
         {
             Debug.Assert(!node.IsByRef);
 
@@ -240,9 +243,9 @@ namespace YantraJS.LambdaCompiler
 
             // Emit indexes. We don't allow byref args, so no need to worry
             // about write-backs or EmitAddress
-            for (int i = 0, n = index.ArgumentCount; i < n; i++)
+            foreach (var arg in index.Arguments)
             {
-                Expression arg = index.GetArgument(i);
+                // Expression arg = index.GetArgument(i);
                 EmitExpression(arg);
             }
 
@@ -283,7 +286,7 @@ namespace YantraJS.LambdaCompiler
 
         private void EmitGetArrayElement(Type arrayType)
         {
-            if (arrayType.IsSZArray)
+            if (arrayType.IsSZArray())
             {
                 // For one dimensional arrays, emit load
                 _ilg.EmitLoadElement(arrayType.GetElementType()!);

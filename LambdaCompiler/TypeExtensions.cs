@@ -12,6 +12,11 @@ namespace YantraJS.LambdaCompiler
 
         private static readonly CacheDict<MethodBase, ParameterInfo[]> s_paramInfoCache = new CacheDict<MethodBase, ParameterInfo[]>(75);
 
+        public static bool IsSZArray(this Type type)
+        {
+            return type.IsArray && type.GetArrayRank() <= 1;
+        }
+
 
         public static TypeCode GetTypeCode(this Type type) => Type.GetTypeCode(type);
 
